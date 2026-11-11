@@ -454,12 +454,14 @@ Panel {
   FileView {
     id: fisierCitite
     path: root.caleCitite
-    watchChanges: false
+    watchChanges: true
     atomicWrites: true
     printErrors: false
     onLoaded: root.incarcaCititele(text())
-    // Prima rulare: fișierul încă nu există. Fără ramura asta „cititeIncarcate”
-    // ar rămâne false pentru totdeauna și nu s-ar salva niciodată nimic.
+    // Un alt display al shell-ului (laptopul vs. monitorul extern) scrie același
+    // fișier rss.json când marchează articole citite; preluăm variația ca să
+    // afișăm același număr de necitite pe toate ecranele.
+    onFileChanged: fisierCitite.reload()
     onLoadFailed: root.incarcaCititele("")
   }
 
@@ -493,11 +495,11 @@ Panel {
     root.actualizeaza()
   }
 
+  // Reîncarcă articolele citite de pe disc. Rulează la pornire și, prin
+  // onFileChanged pe fisierCitite, de fiecare dată când un alt display al
+  // shell-ului (laptopul, monitorul extern) scrie rss.json — astfel numărul
+  // de necitite e sincronizat pe toate ecranele.
   function incarcaCititele(brut) {
-    if (root.cititeIncarcate) {
-      return
-    }
-
     root.citite = Model.curataCitite(Model.parseazaCitite(brut), root.zileDePastrat, root.limitaCitite)
     root.cititeIncarcate = true
   }
